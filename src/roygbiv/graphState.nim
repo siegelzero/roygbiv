@@ -1,5 +1,4 @@
-import random
-
+import std/random
 import graph
 
 
@@ -7,29 +6,31 @@ randomize()
 
 
 type
+  Move* = (Vertex, int)
+
   GraphState* = ref object
     # graph is the underlying graph
-    graph: Graph
+    graph*: Graph
 
     # k is the number of colors available in the assignment
-    k: int
+    k*: int
 
     # color[u] is the color of the vertex u
-    color: seq[int]
+    color*: seq[int]
 
     # cost of the current coloring
     # this is the number of edges that have the same colored endpoints
     # the coloring is proper if the cost is 0
-    cost: int
+    cost*: int
 
     # numAdjacent[u][color] is the number of vertices adjacent to vertex u that are the given color
-    numAdjacent: seq[seq[int]]
+    numAdjacent*: seq[seq[int]]
 
     # current search iteration
-    iteration: int
+    iteration*: int
 
     # color is tabu for vertex u if tabu[u][color] > iteration
-    tabu: seq[seq[int]]
+    tabu*: seq[seq[int]]
 
 
 proc initGraphState*(graph: Graph, k: int): GraphState =
@@ -37,6 +38,7 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
   result = GraphState()
   result.graph = graph
   result.color = newSeq[int](graph.n)
+  result.k = k
 
   # initialize data structures
   for u in graph.vertices:
@@ -59,16 +61,25 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
       result.cost += 1
 
 
+proc copy*(state: GraphState): GraphState =
+  result = deepCopy(state)
+  result.iteration = 0
+  result.tabu = @[]
+
+  for u in state.graph.vertices:
+    result.tabu.add(newSeq[int](state.k))
+
+
 func colorCost*(state: GraphState, u: Vertex, newColor: int): int =
-  # Returns the additional cost incurred by changing vertex u to the given color
+  # Returns the assignment cost obtained by changing vertex u to the given color
   let oldColor = state.color[u]
-  return state.numAdjacent[u][newColor] - state.numAdjacent[u][oldColor]
+  return state.cost + state.numAdjacent[u][newColor] - state.numAdjacent[u][oldColor]
 
 
-func setColor*(state: GraphState, u: Vertex, newColor: int) =
+proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) =
   # Sets color of vertex u to newColor and updates state
   # First adjust cost
-  state.cost += state.colorCost(u, newColor)
+  state.cost = state.colorCost(u, newColor)
 
   # Next change vertex color
   let oldColor = state.color[u]
@@ -78,6 +89,9 @@ func setColor*(state: GraphState, u: Vertex, newColor: int) =
     # v is adjancent to one less vertex of oldColor and one more vertex of newColor
     state.numAdjacent[v][oldColor] -= 1
     state.numAdjacent[v][newColor] += 1
+  
+  if mark:
+    state.tabu[u][oldColor] = state.iteration + state.cost + rand(10)
 
 
 when isMainModule:
@@ -92,6 +106,8 @@ when isMainModule:
     var graph = squareGraph()
     var state = initGraphState(graph, 3)
 
+    assert state.iteration == 0
+    assert state.k == 3
     assert state.color.len == graph.n
 
   block: # proper coloring of square 

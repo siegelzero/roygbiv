@@ -34,16 +34,32 @@ func addEdge*(graph: var Graph, u, v: Vertex) =
   graph.neighbors[v].add(u)
 
 
+func petersenGraph*(): Graph =
+  # Returns Petersen graph
+  result = initGraph(10)
+  result.addEdge(0, 2)
+  result.addEdge(0, 3)
+  result.addEdge(0, 6)
+  result.addEdge(1, 3)
+  result.addEdge(1, 4)
+  result.addEdge(1, 7)
+  result.addEdge(2, 4)
+  result.addEdge(2, 8)
+  result.addEdge(3, 9)
+  result.addEdge(4, 5)
+  result.addEdge(5, 6)
+  result.addEdge(5, 9)
+  result.addEdge(6, 7)
+  result.addEdge(7, 8)
+  result.addEdge(8, 9)
+
+
 when isMainModule:
   import sequtils
 
-  block: # square graph
-    var graph = initGraph(4)
-    graph.addEdge(0, 1)
-    graph.addEdge(1, 2)
-    graph.addEdge(2, 3)
-    graph.addEdge(3, 0)
+  block: # Petersen graph
+    let graph = petersenGraph()
 
-    assert graph.n == 4
-    assert graph.vertices.toSeq.len == 4
-    assert graph.edges.toSeq == @[(0, 1), (0, 3), (1, 2), (2, 3)]
+    assert graph.n == 10
+    assert graph.vertices.toSeq.len == 10
+    assert graph.edges.toSeq.len == 15
