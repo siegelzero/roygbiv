@@ -32,7 +32,6 @@ type
     tabu: seq[seq[int]]
 
 
-
 proc initGraphState*(graph: Graph, k: int): GraphState =
   # Returns a new GraphState for the graph with a random assignment of k colors.
   result = GraphState()
