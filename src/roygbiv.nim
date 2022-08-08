@@ -1,9 +1,4 @@
-import std/strutils
-import std/strformat
-import std/sequtils
-import std/os
-import std/times
-
+import std/[os, sequtils, strformat, strutils, times]
 import "./roygbiv/tabu"
 import "./roygbiv/graph"
 import "./roygbiv/graphState"

@@ -1,7 +1,5 @@
-import std/random
-import std/sequtils
-import std/strformat
-import std/times
+import std/[random, sequtils]
+
 import graph
 
 

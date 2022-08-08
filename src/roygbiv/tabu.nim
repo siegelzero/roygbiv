@@ -1,7 +1,4 @@
-import std/strformat
-import std/random
-import std/times
-
+import std/[random, strformat, times]
 import graph
 import graphState
 
