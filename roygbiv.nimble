@@ -5,6 +5,7 @@ description = "Metaheuristics for Graph Coloring"
 license = "MIT"
 
 srcDir = "src"
+bin = @["roygbiv"]
 
 # Deps
 requires "nim >= 0.13.0"

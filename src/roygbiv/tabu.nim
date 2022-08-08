@@ -1,4 +1,7 @@
+import std/strformat
 import std/random
+import std/times
+
 import graph
 import graphState
 
@@ -6,7 +9,7 @@ import graphState
 randomize()
 
 
-proc bestMoves*(state: var GraphState): seq[Move] =
+proc bestMoves*(state: var GraphState): seq[Move] {.inline.} =
   var
     oldColor: int
     newCost: int
@@ -22,17 +25,15 @@ proc bestMoves*(state: var GraphState): seq[Move] =
     for newColor in 0..<state.k:
       newCost = state.colorCost(u, newColor)
 
-      if state.tabu[u][newColor] > state.iteration:
-        continue
-
-      if newCost < bestMoveCost:
-        bestMoveCost = newCost
-        result = @[(u, newColor)]
-      elif newCost == bestMoveCost:
-        result.add((u, newColor))
+      if state.tabu[u][newColor] <= state.iteration or newCost < state.bestCost:
+        if newCost < bestMoveCost:
+          bestMoveCost = newCost
+          result = @[(u, newColor)]
+        elif newCost == bestMoveCost:
+          result.add((u, newColor))
 
 
-proc applyBestMove*(state: var GraphState) =
+proc applyBestMove*(state: var GraphState) {.inline.} =
   var moves = state.bestMoves()
 
   if moves.len > 0:
@@ -42,21 +43,32 @@ proc applyBestMove*(state: var GraphState) =
 
 proc tabuImprove*(state: GraphState, threshold: int): GraphState =
   var
-    bestCost = state.cost
     current = state.copy()
     lastImprovement = 0
+    then = epochTime()
+    start = then
+    now, rate: float
+    blockSize = 100000
 
   result = current.copy()
 
   while current.iteration - lastImprovement < threshold:
     current.applyBestMove()
 
-    if current.cost < bestCost:
+    if current.iteration > 0 and current.iteration mod blockSize == 0:
+      now = epochTime()
+      rate = float(blockSize) / (now - then)
+      then = now
+      echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
+
+    if current.cost < current.bestCost:
+      echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
       if current.cost == 0:
+        echo fmt"Solution found on iteration: {current.iteration}  Time Elapsed: {epochTime() - start:.3f}"
         return current
 
       lastImprovement = current.iteration
-      bestCost = current.cost
+      current.bestCost = current.cost
       result = current.copy()
     
     current.iteration += 1

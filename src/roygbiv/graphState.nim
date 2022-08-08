@@ -1,4 +1,6 @@
 import std/random
+import std/strformat
+import std/times
 import graph
 
 
@@ -22,6 +24,9 @@ type
     # this is the number of edges that have the same colored endpoints
     # the coloring is proper if the cost is 0
     cost*: int
+
+    # best cost seen during the search
+    bestCost*: int
 
     # numAdjacent[u][color] is the number of vertices adjacent to vertex u that are the given color
     numAdjacent*: seq[seq[int]]
@@ -59,24 +64,28 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
   for (u, v) in graph.edges:
     if result.color[u] == result.color[v]:
       result.cost += 1
+  
+  result.bestCost = result.cost
 
 
 proc copy*(state: GraphState): GraphState =
+  let start = epochTime()
   result = deepCopy(state)
   result.iteration = 0
   result.tabu = @[]
 
   for u in state.graph.vertices:
     result.tabu.add(newSeq[int](state.k))
+  
+  echo fmt"Copy time: {epochTime() - start:.6f}"
 
-
-func colorCost*(state: GraphState, u: Vertex, newColor: int): int =
+func colorCost*(state: GraphState, u: Vertex, newColor: int): int {.inline.} =
   # Returns the assignment cost obtained by changing vertex u to the given color
   let oldColor = state.color[u]
   return state.cost + state.numAdjacent[u][newColor] - state.numAdjacent[u][oldColor]
 
 
-proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) =
+proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) {.inline.} =
   # Sets color of vertex u to newColor and updates state
   # First adjust cost
   state.cost = state.colorCost(u, newColor)
@@ -91,7 +100,7 @@ proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) 
     state.numAdjacent[v][newColor] += 1
   
   if mark:
-    state.tabu[u][oldColor] = state.iteration + state.cost + rand(10)
+    state.tabu[u][oldColor] = state.iteration + 6*state.cost + rand(10)
 
 
 when isMainModule:
