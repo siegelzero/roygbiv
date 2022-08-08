@@ -1,6 +1,7 @@
 type
   Vertex* = int
-  Graph* = object
+  Graph* = ref GraphObj
+  GraphObj = object
     # n is the number of vertices
     n*: int
 
@@ -24,8 +25,10 @@ iterator edges*(graph: Graph): (Vertex, Vertex) =
 
 func initGraph*(n: int): Graph =
   # Returns new Graph on n vertices
-  result.n = n
-  result.neighbors = newSeq[seq[int]](n)
+  result = Graph(
+    n: n,
+    neighbors: newSeq[seq[int]](n)
+  )
 
 
 func addEdge*(graph: var Graph, u, v: Vertex) =

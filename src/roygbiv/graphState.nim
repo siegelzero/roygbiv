@@ -1,4 +1,5 @@
 import std/random
+import std/sequtils
 import std/strformat
 import std/times
 import graph
@@ -69,15 +70,17 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
 
 
 proc copy*(state: GraphState): GraphState =
-  let start = epochTime()
-  result = deepCopy(state)
-  result.iteration = 0
-  result.tabu = @[]
+  result = GraphState(
+    graph: state.graph,
+    k: state.k,
+    cost: state.cost,
+    bestCost: state.bestCost,
+    color: state.color,
+    numAdjacent: state.numAdjacent,
+    iteration: 0,
+    tabu: newSeqWith(state.graph.n, newSeq[int](state.k)),
+  )
 
-  for u in state.graph.vertices:
-    result.tabu.add(newSeq[int](state.k))
-  
-  echo fmt"Copy time: {epochTime() - start:.6f}"
 
 func colorCost*(state: GraphState, u: Vertex, newColor: int): int {.inline.} =
   # Returns the assignment cost obtained by changing vertex u to the given color

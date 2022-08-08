@@ -27,7 +27,10 @@ when isMainModule:
     path = "../data/dimacs/dsjc500.5.col" # 48/?
     # path = "../data/dimacs/dsjc500.9.col" # 126/?
 
-    # path = "../data/linkedin/RAND_300_3_80.3color"
+    # path = "../data/dimacs/dsjc1000.1.col" # 20/?
+    # path = "../data/dimacs/dsjc1000.5.col" # 85/?
+    # path = "../data/dimacs/dsjc1000.9.col" # 223/?
+
     file = open(path, fmRead)
   
   var

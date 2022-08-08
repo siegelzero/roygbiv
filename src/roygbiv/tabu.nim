@@ -62,7 +62,6 @@ proc tabuImprove*(state: GraphState, threshold: int): GraphState =
       echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
 
     if current.cost < current.bestCost:
-      echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
       if current.cost == 0:
         echo fmt"Solution found on iteration: {current.iteration}  Time Elapsed: {epochTime() - start:.3f}"
         return current
