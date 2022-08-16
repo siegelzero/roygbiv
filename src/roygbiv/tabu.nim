@@ -8,15 +8,12 @@ randomize()
 
 proc bestMoves*(state: var GraphState): seq[Move] {.inline.} =
   var
-    oldColor: int
     newCost: int
     bestMoveCost = 1000000
 
   for u in state.graph.vertices:
-    oldColor = state.color[u]
-
     # if u has no conflicting neighbors, don't change its color
-    if state.numAdjacent[u][oldColor] == 0:
+    if state.numAdjacent[u][state.color[u]] == 0:
       continue
 
     for newColor in 0..<state.k:
@@ -31,6 +28,7 @@ proc bestMoves*(state: var GraphState): seq[Move] {.inline.} =
 
 
 proc applyBestMove*(state: var GraphState) {.inline.} =
+  # Applies a randomly chosen best greedy move to the state, mutating state.
   var moves = state.bestMoves()
 
   if moves.len > 0:
@@ -41,15 +39,14 @@ proc applyBestMove*(state: var GraphState) {.inline.} =
 proc tabuImprove*(state: GraphState, threshold: int): GraphState =
   var
     current = state.copy()
+    bestCost = current.cost
     lastImprovement = 0
     then = epochTime()
     start = then
     now, rate: float
     blockSize = 100000
 
-  result = current.copy()
-
-  while current.iteration - lastImprovement < threshold:
+  while current.cost > 0 and current.iteration - lastImprovement < threshold:
     current.applyBestMove()
 
     if current.iteration > 0 and current.iteration mod blockSize == 0:
@@ -58,16 +55,18 @@ proc tabuImprove*(state: GraphState, threshold: int): GraphState =
       then = now
       echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
 
-    if current.cost < current.bestCost:
-      if current.cost == 0:
-        echo fmt"Solution found on iteration: {current.iteration}  Time Elapsed: {epochTime() - start:.3f}"
-        return current
-
+    if current.cost < bestCost:
       lastImprovement = current.iteration
-      current.bestCost = current.cost
-      result = current.copy()
+      bestCost = current.cost
     
     current.iteration += 1
+
+  current.loadBest()
+
+  if current.cost == 0:
+    echo fmt"Solution found on iteration: {current.iteration}  Time Elapsed: {epochTime() - start:.3f}"
+
+  return current
 
 
 when isMainModule:

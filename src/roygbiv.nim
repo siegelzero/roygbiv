@@ -19,12 +19,12 @@ when isMainModule:
     # path = "../data/dimacs/dsjc250.9.col" # 72
 
     # path = "../data/dimacs/dsjc500.1.col" # 12/?
-    path = "../data/dimacs/dsjc500.5.col" # 48/?
+    # path = "../data/dimacs/dsjc500.5.col" # 48/?
     # path = "../data/dimacs/dsjc500.9.col" # 126/?
 
     # path = "../data/dimacs/dsjc1000.1.col" # 20/?
     # path = "../data/dimacs/dsjc1000.5.col" # 85/?
-    # path = "../data/dimacs/dsjc1000.9.col" # 223/?
+    path = "../data/dimacs/dsjc1000.9.col" # 223/?
 
     file = open(path, fmRead)
   
@@ -48,9 +48,6 @@ when isMainModule:
       u = parseInt(terms[1]) - 1
       v = parseInt(terms[2]) - 1
       g.addEdge(u, v)
-
-  assert 2*g.edges.toSeq.len == numEdges
-
 
   var state = initGraphState(g, k)
   let start = epochTime()

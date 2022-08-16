@@ -26,6 +26,7 @@ type
 
     # best cost seen during the search
     bestCost*: int
+    bestColor: seq[int]
 
     # numAdjacent[u][color] is the number of vertices adjacent to vertex u that are the given color
     numAdjacent*: seq[seq[int]]
@@ -39,41 +40,45 @@ type
 
 proc initGraphState*(graph: Graph, k: int): GraphState =
   # Returns a new GraphState for the graph with a random assignment of k colors.
-  result = GraphState()
-  result.graph = graph
-  result.color = newSeq[int](graph.n)
-  result.k = k
+  var state = GraphState()
+  state.graph = graph
+  state.color = newSeq[int](graph.n)
+  state.k = k
 
   # initialize data structures
   for u in graph.vertices:
-    result.numAdjacent.add(newSeq[int](k))
-    result.tabu.add(newSeq[int](k))
+    state.numAdjacent.add(newSeq[int](k))
+    state.tabu.add(newSeq[int](k))
 
   # color each vertex randomly
   for u in graph.vertices:
-    result.color[u] = rand(k - 1)
+    state.color[u] = rand(k - 1)
 
   # bookkeeping for efficient neighbor evaluation
   for u in graph.vertices:
     for v in graph.neighbors[u]:
       for color in 0..<k:
-        if result.color[v] == color:
-          result.numAdjacent[u][color] += 1
+        if state.color[v] == color:
+          state.numAdjacent[u][color] += 1
 
   for (u, v) in graph.edges:
-    if result.color[u] == result.color[v]:
-      result.cost += 1
+    if state.color[u] == state.color[v]:
+      state.cost += 1
   
-  result.bestCost = result.cost
+  state.bestCost = state.cost
+  state.bestColor = state.color
+  return state
 
 
 proc copy*(state: GraphState): GraphState =
-  result = GraphState(
+  # Returns a copy of the state, with tabu data reset.
+  return GraphState(
     graph: state.graph,
     k: state.k,
     cost: state.cost,
     bestCost: state.bestCost,
     color: state.color,
+    bestColor: state.bestColor,
     numAdjacent: state.numAdjacent,
     iteration: 0,
     tabu: newSeqWith(state.graph.n, newSeq[int](state.k)),
@@ -95,13 +100,28 @@ proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) 
   let oldColor = state.color[u]
   state.color[u] = newColor
 
+  # Now update the best solution
+  if state.cost < state.bestCost:
+    state.bestCost = state.cost
+    state.bestColor = state.color
+
   for v in state.graph.neighbors[u]:
     # v is adjancent to one less vertex of oldColor and one more vertex of newColor
     state.numAdjacent[v][oldColor] -= 1
     state.numAdjacent[v][newColor] += 1
   
+  # Mark oldColor as tabu for vertex u for some number of iterations
   if mark:
     state.tabu[u][oldColor] = state.iteration + 6*state.cost + rand(10)
+
+
+proc loadBest*(state: GraphState) =
+  # Resets the state to the best coloring seen so far
+  for u in state.graph.vertices:
+    state.setColor(u, state.bestColor[u])
+
+  doAssert state.color == state.bestColor
+  doAssert state.cost == state.bestCost
 
 
 when isMainModule:
