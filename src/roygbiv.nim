@@ -15,7 +15,7 @@ when isMainModule:
     # path = "../data/dimacs/dsjc125.9.col" # 44
 
     # path = "../data/dimacs/dsjc250.1.col" # 8
-    # path = "../data/dimacs/dsjc250.5.col" # 28/?
+    path = "../data/dimacs/dsjc250.5.col" # 28/?
     # path = "../data/dimacs/dsjc250.9.col" # 72
 
     # path = "../data/dimacs/dsjc500.1.col" # 12/?
@@ -24,7 +24,7 @@ when isMainModule:
 
     # path = "../data/dimacs/dsjc1000.1.col" # 20/?
     # path = "../data/dimacs/dsjc1000.5.col" # 85/?
-    path = "../data/dimacs/dsjc1000.9.col" # 223/?
+    # path = "../data/dimacs/dsjc1000.9.col" # 223/?
 
     file = open(path, fmRead)
   
@@ -55,6 +55,7 @@ when isMainModule:
   var improved = state.tabuImprove(threshold)
 
   echo improved.cost
+  echo improved.vertexPartition()
 
   let stop = epochTime()
   echo fmt"Time taken: {stop - start:.3f}"

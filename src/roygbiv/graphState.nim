@@ -1,4 +1,4 @@
-import std/[random, sequtils]
+import std/[algorithm, random, sequtils]
 
 import graph
 
@@ -122,6 +122,44 @@ proc loadBest*(state: GraphState) =
 
   doAssert state.color == state.bestColor
   doAssert state.cost == state.bestCost
+
+
+func vertexPartition*(state: GraphState): seq[seq[Vertex]] =
+  # Partitions the vertices of the graph based on their assigned color.
+  # Each individual group is sorted, and groups are sorted according to least element.
+  var partition: seq[seq[Vertex]]
+
+  # Initialize empty group for each color in the assignment
+  for i in 0..<state.k:
+    partition.add(@[])
+  
+  # Put each vertex into its color group
+  for u in state.graph.vertices:
+    partition[state.color[u]].add(u)
+
+  # Sort each group
+  for i in 0..<state.k:
+    partition[i].sort()
+  
+  # Sort the groups according to least element
+  func myCmp(A, B: seq[Vertex]): int = return cmp(A.min(), B.min())
+  partition.sort(myCmp)
+
+  return partition
+
+
+proc normalizeColors*(state: GraphState) =
+  # Normalizes the assigned colors.
+  let oldCost = state.cost
+  let partition = state.vertexPartition()
+
+  # Recolor the vertices according to the vertex partition.
+  for i in 0..<state.k:
+    for u in partition[i]:
+      state.setColor(u, i)
+  
+  # Recoloring will not affect the cost
+  doAssert state.cost == oldCost
 
 
 when isMainModule:
