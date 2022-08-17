@@ -1,3 +1,6 @@
+import std/strutils
+
+
 type
   Vertex* = int
   Graph* = ref GraphObj
@@ -35,6 +38,32 @@ func addEdge*(graph: var Graph, u, v: Vertex) =
   # Adds edge (u, v) to the graph
   graph.neighbors[u].add(v)
   graph.neighbors[v].add(u)
+
+
+proc loadDIMACS*(path: string): Graph =
+  let file = open(path, fmRead)
+  var
+    u, v: int
+    numEdges, numVertices: int
+    terms: seq[string]
+
+  for line in file.lines:
+    terms = line.split(" ")
+    if terms[0] == "p":
+      numVertices = parseInt(terms[2])
+      numEdges = parseInt(terms[3])
+      break
+
+  var graph = initGraph(numVertices)
+
+  for line in file.lines:
+    var terms = line.split(" ")
+    if terms[0] == "e":
+      u = parseInt(terms[1]) - 1
+      v = parseInt(terms[2]) - 1
+      graph.addEdge(u, v)
+
+  return graph
 
 
 func petersenGraph*(): Graph =

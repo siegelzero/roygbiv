@@ -6,10 +6,11 @@ import graphState
 randomize()
 
 
-proc bestMoves*(state: var GraphState): seq[Move] {.inline.} =
+proc bestMoves*(state: GraphState): seq[Move] {.inline.} =
+  # Returns moves of mini
   var
     newCost: int
-    bestMoveCost = 1000000
+    bestMoveCost = high(int)
 
   for u in state.graph.vertices:
     # if u has no conflicting neighbors, don't change its color
@@ -27,7 +28,7 @@ proc bestMoves*(state: var GraphState): seq[Move] {.inline.} =
           result.add((u, newColor))
 
 
-proc applyBestMove*(state: var GraphState) {.inline.} =
+proc applyBestMove*(state: GraphState) {.inline.} =
   # Applies a randomly chosen best greedy move to the state, mutating state.
   var moves = state.bestMoves()
 
