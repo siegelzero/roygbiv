@@ -13,4 +13,5 @@ requires "nim >= 0.13.0"
 task test, "Test":
   exec "nim c -r src/roygbiv/graph.nim"
   exec "nim c -r src/roygbiv/graphState.nim"
+  exec "nim c -r src/roygbiv/scatter.nim"
   exec "nim c -r src/roygbiv/tabu.nim"

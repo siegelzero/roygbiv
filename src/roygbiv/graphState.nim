@@ -148,7 +148,7 @@ proc vertexPartition*(state: GraphState): seq[VertexSet] =
   return partition
 
 
-proc alignColors*(target, state: GraphState) =
+proc alignColors*(state, target: GraphState) =
   doAssert target.k == state.k
 
   let targetPartition = target.vertexPartition()
@@ -245,7 +245,7 @@ when isMainModule:
     assert state1.color != state2.color
 
     # Align state2 assignment with state1
-    state1.alignColors(state2)
+    state2.alignColors(state1)
 
     # Check that assignments are now the same
     assert state1.cost == 0
