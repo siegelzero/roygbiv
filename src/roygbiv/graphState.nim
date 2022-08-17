@@ -1,4 +1,4 @@
-import std/[algorithm, random, sequtils]
+import std/[algorithm, packedsets, random, sequtils]
 
 import graph
 
@@ -7,6 +7,8 @@ randomize()
 
 
 type
+  VertexSet = PackedSet[Vertex]
+
   Move* = (Vertex, int)
 
   GraphState* = ref object
@@ -124,42 +126,54 @@ proc loadBest*(state: GraphState) =
   doAssert state.cost == state.bestCost
 
 
-func vertexPartition*(state: GraphState): seq[seq[Vertex]] =
-  # Partitions the vertices of the graph based on their assigned color.
-  # Each individual group is sorted, and groups are sorted according to least element.
-  var partition: seq[seq[Vertex]]
+proc vertexPartition*(state: GraphState): seq[VertexSet] =
+  var
+    group: VertexSet
+    partition: seq[VertexSet]
 
   # Initialize empty group for each color in the assignment
   for i in 0..<state.k:
-    partition.add(@[])
-  
+    group = initPackedSet[Vertex]()
+    partition.add(group)
+
   # Put each vertex into its color group
   for u in state.graph.vertices:
-    partition[state.color[u]].add(u)
+    partition[state.color[u]].incl(u)
 
-  # Sort each group
-  for i in 0..<state.k:
-    partition[i].sort()
-  
   # Sort the groups according to least element
-  func myCmp(A, B: seq[Vertex]): int = return cmp(A.min(), B.min())
+  func min(A: VertexSet): Vertex = A.items.toSeq.min()
+  func myCmp(A, B: VertexSet): int = return cmp(A.min(), B.min())
   partition.sort(myCmp)
 
   return partition
 
 
-proc normalizeColors*(state: GraphState) =
-  # Normalizes the assigned colors.
-  let oldCost = state.cost
-  let partition = state.vertexPartition()
+proc alignColors*(target, state: GraphState) =
+  doAssert target.k == state.k
 
-  # Recolor the vertices according to the vertex partition.
-  for i in 0..<state.k:
-    for u in partition[i]:
-      state.setColor(u, i)
+  let targetPartition = target.vertexPartition()
+  var
+    currentPartition = state.vertexPartition()
+    bestMatch: VertexSet
+    newPartition: seq[VertexSet]
+    intersection, maxIdx, maxIntersection: int
+
+  for group in targetPartition:
+    maxIntersection = 0
+    maxIdx = 0
+    for i in 0..<currentPartition.len:
+      intersection = group.intersection(currentPartition[i]).len()
+      if intersection > maxIntersection:
+        maxIntersection = intersection
+        maxIdx = i
+
+    bestMatch = currentPartition[maxIdx]
+    newPartition.add(bestMatch)
+    currentPartition.del(maxIdx)
   
-  # Recoloring will not affect the cost
-  doAssert state.cost == oldCost
+  for i in 0..<newPartition.len:
+    for u in newPartition[i]:
+      state.setColor(u, i)
 
 
 when isMainModule:
@@ -196,3 +210,44 @@ when isMainModule:
     # now each edge is adjacent to different colors
     # this is a proper coloring, so the cost should be 0
     assert state.cost == 0
+
+  block: # vertex partitioning
+    var graph = squareGraph()
+    var state = initGraphState(graph, 2)
+    state.setColor(0, 0)
+    state.setColor(1, 1)
+    state.setColor(2, 0)
+    state.setColor(3, 1)
+    assert state.cost == 0
+
+    var partition = state.vertexPartition()
+    assert partition == @[[0, 2].toPackedSet, [1, 3].toPackedSet]
+
+  block: # color alignment
+    var graph = squareGraph()
+    # Initialize two GraphStates for the graph, with equivalent (but different)
+    # color assignments
+    var state1 = initGraphState(graph, 2)
+    state1.setColor(0, 0)
+    state1.setColor(1, 1)
+    state1.setColor(2, 0)
+    state1.setColor(3, 1)
+
+    var state2 = initGraphState(graph, 2)
+    state2.setColor(0, 1)
+    state2.setColor(1, 0)
+    state2.setColor(2, 1)
+    state2.setColor(3, 0)
+
+    # Check that both color assignments are valid but different
+    assert state1.cost == 0
+    assert state2.cost == 0
+    assert state1.color != state2.color
+
+    # Align state2 assignment with state1
+    state1.alignColors(state2)
+
+    # Check that assignments are now the same
+    assert state1.cost == 0
+    assert state2.cost == 0
+    assert state1.color == state2.color
