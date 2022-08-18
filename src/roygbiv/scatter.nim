@@ -46,6 +46,20 @@ proc relinkPath(A, B: GraphState): seq[GraphState] =
       result.add(current.copy())
 
 
+proc buildPopulation*(graph: Graph,
+                      popSize: int,
+                      tabuDepth: int): seq[GraphState] =
+  return
+
+
+proc scatterSearch*(graph: Graph,
+                    popSize: int,
+                    iterations: int,
+                    tabuThreshold: int,
+                    relinkThreshold: int) =
+  return
+
+
 when isMainModule:
   block: # random coloring of square 
     var graph = loadDIMACS("data/dimacs/dsjc125.1.col")
