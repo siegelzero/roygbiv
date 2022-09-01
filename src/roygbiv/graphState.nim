@@ -1,4 +1,4 @@
-import std/[algorithm, packedsets, random, sequtils]
+import std/[packedsets, random, sequtils]
 
 import graph
 
@@ -8,6 +8,8 @@ randomize()
 
 type
   VertexSet = PackedSet[Vertex]
+
+  Partition = seq[VertexSet]
 
   Move* = (Vertex, int)
 
@@ -20,6 +22,9 @@ type
 
     # color[u] is the color of the vertex u
     color*: seq[int]
+
+    # coefficient in tabu tenure
+    alpha*: int
 
     # cost of the current coloring
     # this is the number of edges that have the same colored endpoints
@@ -45,6 +50,7 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
   var state = GraphState()
   state.graph = graph
   state.color = newSeq[int](graph.n)
+  state.alpha = 6
   state.k = k
 
   # initialize data structures
@@ -59,9 +65,7 @@ proc initGraphState*(graph: Graph, k: int): GraphState =
   # bookkeeping for efficient neighbor evaluation
   for u in graph.vertices:
     for v in graph.neighbors[u]:
-      for color in 0..<k:
-        if state.color[v] == color:
-          state.numAdjacent[u][color] += 1
+      state.numAdjacent[u][state.color[v]] += 1
 
   for (u, v) in graph.edges:
     if state.color[u] == state.color[v]:
@@ -77,6 +81,7 @@ proc copy*(state: GraphState): GraphState =
   return GraphState(
     graph: state.graph,
     k: state.k,
+    alpha: state.alpha,
     cost: state.cost,
     bestCost: state.bestCost,
     color: state.color,
@@ -114,7 +119,7 @@ proc setColor*(state: GraphState, u: Vertex, newColor: int, mark: bool = false) 
   
   # Mark oldColor as tabu for vertex u for some number of iterations
   if mark:
-    state.tabu[u][oldColor] = state.iteration + 6*state.cost + rand(10)
+    state.tabu[u][oldColor] = state.iteration + state.alpha*state.cost + rand(10)
 
 
 proc loadBest*(state: GraphState) =
@@ -140,40 +145,43 @@ proc vertexPartition*(state: GraphState): seq[VertexSet] =
   for u in state.graph.vertices:
     partition[state.color[u]].incl(u)
 
-  # Sort the groups according to least element
-  func min(A: VertexSet): Vertex = A.items.toSeq.min()
-  func myCmp(A, B: VertexSet): int = return cmp(A.min(), B.min())
-  partition.sort(myCmp)
-
   return partition
 
 
-proc alignColors*(state, target: GraphState) =
-  doAssert target.k == state.k
+func biggestGroup(A: seq[VertexSet]): VertexSet =
+  result = A[0]
+  for i in 1..<A.len:
+    if A[i].len > result.len:
+      result = A[i]
 
-  let targetPartition = target.vertexPartition()
+
+proc crossover*(A, B: GraphState): GraphState =
   var
-    currentPartition = state.vertexPartition()
-    bestMatch: VertexSet
-    newPartition: seq[VertexSet]
-    intersection, maxIdx, maxIntersection: int
+    group: VertexSet
+    pairedGroups: seq[Partition]
 
-  for group in targetPartition:
-    maxIntersection = 0
-    maxIdx = 0
-    for i in 0..<currentPartition.len:
-      intersection = group.intersection(currentPartition[i]).len()
-      if intersection > maxIntersection:
-        maxIntersection = intersection
-        maxIdx = i
+  pairedGroups = @[A.vertexPartition(), B.vertexPartition()]
+  result = initGraphState(A.graph, A.k)
 
-    bestMatch = currentPartition[maxIdx]
-    newPartition.add(bestMatch)
-    currentPartition.del(maxIdx)
-  
-  for i in 0..<newPartition.len:
-    for u in newPartition[i]:
-      state.setColor(u, i)
+  for i in 0..<A.k:
+    group = biggestGroup(pairedGroups[i mod 2])
+    for u in group:
+      result.setColor(u, i)
+    for gp in pairedGroups[(i + 1) mod 2].mitems:
+      gp.excl(group)
+    for gp in pairedGroups[i mod 2].mitems:
+      gp.excl(group)
+
+
+proc distance*(A, B: GraphState): int =
+  # Returns the distance between the two assignment states; i.e. the number of
+  # differently assigned vertices.
+  for u in A.graph.vertices:
+    if A.color[u] != B.color[u]:
+      result += 1
+
+
+func costCompare*(A, B: GraphState): int = cmp(A.cost, B.cost)
 
 
 when isMainModule:
@@ -243,9 +251,6 @@ when isMainModule:
     assert state1.cost == 0
     assert state2.cost == 0
     assert state1.color != state2.color
-
-    # Align state2 assignment with state1
-    state2.alignColors(state1)
 
     # Check that assignments are now the same
     assert state1.cost == 0

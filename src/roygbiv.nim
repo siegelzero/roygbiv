@@ -1,21 +1,28 @@
 import std/[os, strformat, strutils, times]
-import "./roygbiv/tabu"
-import "./roygbiv/graph"
-import "./roygbiv/graphState"
+import roygbiv/[graph, graphState, hybrid, scatter, tabu]
+
+
+proc tabuColor*(graph: Graph, k, tabuThreshold: int): GraphState =
+  var state = initGraphState(graph, k)
+  return state.tabuImprove(tabuThreshold)
 
 
 when isMainModule:
   let
     path = paramStr(1)
     k = parseInt(paramStr(2))
-    threshold = parseInt(paramStr(3))
+    popSize = parseInt(paramStr(3))
+    iterations = parseInt(paramStr(4))
+    threshold = parseInt(paramStr(5))
   
   var g = loadDIMACS(path)
-  var state = initGraphState(g, k)
+
   let start = epochTime()
-  var improved = state.tabuImprove(threshold)
-
-  echo improved.cost
-
+  # var improved = tabuColor(g, k, threshold)
+  # var improved = scatterSearch(g, k, popSize, iterations, threshold)
+  # var improved = hybridEvolutionary(g, k, popSize, iterations, threshold)
+  var improved = hybridEvolutionaryParallel(g, k, popSize, iterations, threshold)
   let stop = epochTime()
+
+  echo fmt"Found {improved.cost}"
   echo fmt"Time taken: {stop - start:.3f}"
