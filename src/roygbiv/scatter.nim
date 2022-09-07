@@ -24,7 +24,7 @@ proc relinkPath(A, B: GraphState): seq[GraphState] =
       moves.add((u, B.color[u]))
     
   let pathLen = moves.len
-  echo fmt"Relinking path length {pathLen}"
+  echo fmt"Relink pathLen {pathLen}"
 
   while moves.len > 0:
     bestMoves = @[]
@@ -46,10 +46,6 @@ proc relinkPath(A, B: GraphState): seq[GraphState] =
     moves.del(ri)
 
     if float(pathLen)*rand(1.0) <= 10.0:
-      result.add(current.copy())
-    
-    if current.cost < min(A.cost, B.cost):
-      echo "Keeping better offspring"
       result.add(current.copy())
 
 
@@ -73,6 +69,20 @@ proc replaceMostSimilar*(population: var seq[GraphState], entry: GraphState) =
     population[minIndex] = entry
 
 
+proc relinkPairs*(states: seq[GraphState], tabuThreshold: int): seq[GraphState] =
+  for i in 0..<states.len:
+    for j in 0..<i:
+      # Sample the relink path between the two states, improving each.
+      for entry in relinkPath(states[i], states[j]).batchImprove(tabuThreshold):
+        # Keep any of these improved states are better than both parents.
+        # echo fmt"Relink pair {states[i].cost} - {states[j].cost} -> {entry.cost}"
+        if entry.cost < min(states[i].cost, states[j].cost):
+          echo fmt"Relink pair {states[i].cost} - {states[j].cost} -> {entry.cost}"
+          result.add(entry)
+          if entry.cost == 0:
+            return result
+
+
 proc scatterSearch*(graph: Graph,
                     k: int,
                     populationSize: int,
@@ -92,23 +102,10 @@ proc scatterSearch*(graph: Graph,
 
   # On each iteration, we attempt to improve the population.
   for iter in 0..<iterations:
-    improvements = @[]
     echo ""
     echo fmt"Scatter Search iteration {iter + 1} of {iterations}"
-    # Visit each pair of candidate
-    for i in 0..<population.len:
-      for j in 0..<i:
-        # The population are sorted by cost so that candidates[j].cost <= candidates[i].cost since j < i
-        echo fmt"Relinking states of cost {population[i].cost} -> {population[j].cost}"
-        # Sample the relink path between the two states, improving each.
-        for entry in relinkPath(population[i], population[j]).batchImprove(currentThreshold):
-          # Keep any of these improved states are better than both parents.
-          if entry.cost < population[j].cost:
-            if entry.cost == 0:
-              echo "Found Solution"
-              return entry
-            echo fmt"Adding {entry.cost} to candidate pool"
-            improvements.add(entry)
+
+    improvements = population.relinkPairs(currentThreshold)
       
     # Update the population if improvements are found.
     # Otherwise we increase the tabu depth.
@@ -117,7 +114,7 @@ proc scatterSearch*(graph: Graph,
       for e in improvements:
         population.replaceMostSimilar(e)
     else:
-      currentThreshold = (currentThreshold * 15) div 10
+      currentThreshold += currentThreshold div 10
       echo fmt"Increased threshold to {currentThreshold}"
 
     population.sort(costCompare)

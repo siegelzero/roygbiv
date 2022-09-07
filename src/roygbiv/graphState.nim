@@ -7,8 +7,6 @@ randomize()
 
 
 type
-  VertexSet = PackedSet[Vertex]
-
   Partition = seq[VertexSet]
 
   Move* = (Vertex, int)
@@ -182,6 +180,8 @@ proc distance*(A, B: GraphState): int =
 
 
 func costCompare*(A, B: GraphState): int = cmp(A.cost, B.cost)
+
+func `==`*(A, B: GraphState): bool = distance(A, B) == 0
 
 
 when isMainModule:

@@ -1,8 +1,11 @@
-import std/[algorithm, random, strformat, threadpool]
+import std/[algorithm, random, sequtils, strformat, threadpool]
 
 import graph
 import graphState
 import tabu
+
+
+randomize()
 
 
 proc hybridEvolutionary*(graph: Graph,
@@ -82,6 +85,7 @@ proc hybridEvolutionaryParallel*(graph: Graph,
 
   for i in 0..<iterations:
     population.shuffle()
+    echo fmt"Iteration {i}"
     population.batchCrossoverImprove(currentThreshold)
     population.sort(costCompare)
     if population[0].cost == 0:

@@ -1,15 +1,17 @@
-import std/strutils
+import std/[packedsets, strutils]
 
 
 type
   Vertex* = int
+  VertexSet* = PackedSet[Vertex]
+
   Graph* = ref GraphObj
   GraphObj = object
     # n is the number of vertices
     n*: int
 
     # neighbors[u] contains the vertices v that share an edge with u
-    neighbors*: seq[seq[Vertex]]
+    neighbors*: seq[VertexSet]
 
   
 iterator vertices*(graph: Graph): Vertex =
@@ -30,14 +32,14 @@ func initGraph*(n: int): Graph =
   # Returns new Graph on n vertices
   result = Graph(
     n: n,
-    neighbors: newSeq[seq[int]](n)
+    neighbors: newSeq[VertexSet](n)
   )
 
 
 func addEdge*(graph: var Graph, u, v: Vertex) =
   # Adds edge (u, v) to the graph
-  graph.neighbors[u].add(v)
-  graph.neighbors[v].add(u)
+  graph.neighbors[u].incl(v)
+  graph.neighbors[v].incl(u)
 
 
 proc loadDIMACS*(path: string): Graph =
