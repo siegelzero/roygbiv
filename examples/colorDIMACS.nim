@@ -33,14 +33,15 @@ proc colorDIMACS(path: string, k: int): ColoringState =
   let graph = loadDIMACS(path)
 
   let
-    populationSize = 2*max(graph.n div 60, 10)
+    # populationSize = 2*max(graph.n div 60, 10)
+    populationSize = 16
     generations = 1000
-    # tabuThreshold = 20*graph.n
-    tabuThreshold = 1000000
+    tabuThreshold = 20*graph.n
+    # tabuThreshold = 1000000
   
   echo "Coloring graph..."
-  # let improved = hybridEvolutionaryParallel(graph, k, populationSize, generations, tabuThreshold)
-  let improved = initColoringState(graph, k).tabuImprove(tabuThreshold, verbose = true)
+  let improved = hybridEvolutionaryParallel(graph, k, populationSize, generations, tabuThreshold)
+  # let improved = initColoringState(graph, k).tabuImprove(tabuThreshold, verbose = true)
 
   if improved.cost == 0:
     let filename = fmt"{path}.sol.{k}"
@@ -58,11 +59,6 @@ when isMainModule:
     path = paramStr(1)
     k = parseInt(paramStr(2))
     then = epochTime()
-
-  # var f = @[1, 5, 2, 4, 3].toPackedSet
-
-  # for e in f:
-  #   echo fmt"{i}, {e}"
 
   let res = colorDIMACS(path, k)
   let diff = epochTime() - then
