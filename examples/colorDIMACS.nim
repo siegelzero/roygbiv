@@ -3,7 +3,7 @@ import std/[os, packedsets, strformat, strutils, times]
 import roygbiv/[coloring, graph]
 
 
-proc loadDIMACS*(path: string): Graph =
+proc loadDIMACS*(path: string): DenseGraph =
   let file = open(path, fmRead)
   var
     u, v: int
@@ -17,7 +17,7 @@ proc loadDIMACS*(path: string): Graph =
       numEdges = parseInt(terms[3])
       break
 
-  var graph = initGraph(numVertices)
+  var graph = newDenseGraph(numVertices)
 
   for line in file.lines:
     var terms = line.split(" ")
@@ -36,7 +36,7 @@ proc colorDIMACS(path: string, k: int): ColoringState =
     # populationSize = 2*max(graph.n div 60, 10)
     populationSize = 16
     generations = 1000
-    tabuThreshold = 20*graph.n
+    tabuThreshold = 20*graph.numVertices
     # tabuThreshold = 1000000
   
   echo "Coloring graph..."

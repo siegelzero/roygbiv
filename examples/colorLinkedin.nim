@@ -3,7 +3,7 @@ import std/[os, strformat, strutils, tables, times]
 import roygbiv/[graph, coloring]
 
 
-proc loadLinkedin*(path: string): (Graph, Table[string, int]) =
+proc loadLinkedin*(path: string): (DenseGraph, Table[string, int]) =
   let file = open(path, fmRead)
   var
     currentLine = -1
@@ -13,7 +13,7 @@ proc loadLinkedin*(path: string): (Graph, Table[string, int]) =
     vertexNeighbors: seq[string]
 
   var
-    graph: Graph
+    graph: DenseGraph
     nameToInt: Table[string, int]
 
   echo "Reading file..."

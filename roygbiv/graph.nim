@@ -5,46 +5,35 @@ type
   Vertex* = int
   VertexSet* = PackedSet[Vertex]
 
-  Graph* = ref GraphObj
-  GraphObj = object
-    # n is the number of vertices
-    n*: int
-
-    # neighbors[u] contains the vertices v that share an edge with u
+  DenseGraph* = ref object
+    ## Undirected Simple Graph with n vertices, represented by 0, 1, ..., n-1
+    numVertices*: int
     neighbors*: seq[VertexSet]
-
   
-iterator vertices*(graph: Graph): Vertex =
+iterator vertices*(graph: DenseGraph): Vertex =
   # Iterator over the vertices of the graph
-  for u in 0..<graph.n:
-    yield u
+  for u in 0..<graph.numVertices: yield u
 
-
-iterator edges*(graph: Graph): (Vertex, Vertex) =
-  # Iterator over the edges (u, v) of the graph standardized with u < v.
+iterator edges*(graph: DenseGraph): (Vertex, Vertex) =
+  # Iterator over the edges (u, v) of the graph with u < v
   for u in graph.vertices:
     for v in graph.neighbors[u]:
       if u < v:
         yield (u, v)
 
+func newDenseGraph*(n: int): DenseGraph =
+  # Returns new DenseGraph on n vertices
+  DenseGraph(numVertices: n, neighbors: newSeq[VertexSet](n))
 
-func initGraph*(n: int): Graph =
-  # Returns new Graph on n vertices
-  result = Graph(
-    n: n,
-    neighbors: newSeq[VertexSet](n)
-  )
-
-
-func addEdge*(graph: var Graph, u, v: Vertex) =
+func addEdge*(graph: var DenseGraph, u, v: Vertex) =
   # Adds edge (u, v) to the graph
   graph.neighbors[u].incl(v)
   graph.neighbors[v].incl(u)
 
 
-func petersenGraph*(): Graph =
+func petersenGraph*(): DenseGraph =
   # Returns Petersen graph
-  result = initGraph(10)
+  result = newDenseGraph(10)
   result.addEdge(0, 2)
   result.addEdge(0, 3)
   result.addEdge(0, 6)
@@ -68,6 +57,6 @@ when isMainModule:
   block: # Petersen graph
     let graph = petersenGraph()
 
-    assert graph.n == 10
+    assert graph.numVertices == 10
     assert graph.vertices.toSeq.len == 10
     assert graph.edges.toSeq.len == 15

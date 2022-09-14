@@ -11,7 +11,7 @@ type
 
   ColoringState* = ref object
     # graph is the underlying graph
-    graph*: Graph
+    graph*: DenseGraph
 
     # k is the number of colors available in the assignment
     k*: int
@@ -41,11 +41,11 @@ type
     tabu*: seq[seq[int]]
 
 
-proc initColoringState*(graph: Graph, k: int): ColoringState =
+proc initColoringState*(graph: DenseGraph, k: int): ColoringState =
   # Returns a new ColoringState for the graph with a random assignment of k colors.
   var state = ColoringState()
   state.graph = graph
-  state.color = newSeq[int](graph.n)
+  state.color = newSeq[int](graph.numVertices)
   state.alpha = 6
   state.k = k
 
@@ -84,7 +84,7 @@ proc copy*(state: ColoringState): ColoringState =
     bestColor: state.bestColor,
     numAdjacent: state.numAdjacent,
     iteration: 0,
-    tabu: newSeqWith(state.graph.n, newSeq[int](state.k)),
+    tabu: newSeqWith(state.graph.numVertices, newSeq[int](state.k)),
   )
 
 
@@ -138,39 +138,3 @@ proc distance*(A, B: ColoringState): int =
 func costCompare*(A, B: ColoringState): int = cmp(A.cost, B.cost)
 
 func `==`*(A, B: ColoringState): bool = distance(A, B) == 0
-
-
-when isMainModule:
-  proc squareGraph(): Graph =
-    result = initGraph(4)
-    result.addEdge(0, 1)
-    result.addEdge(1, 2)
-    result.addEdge(2, 3)
-    result.addEdge(3, 0)
-
-  block: # random coloring of square 
-    var graph = squareGraph()
-    var state = initColoringState(graph, 3)
-
-    assert state.iteration == 0
-    assert state.k == 3
-    assert state.color.len == graph.n
-
-  block: # proper coloring of square 
-    var graph = squareGraph()
-    var state = initColoringState(graph, 2)
-
-    state.setColor(0, 0)
-    state.setColor(2, 0)
-    state.setColor(1, 0)
-    state.setColor(3, 0)
-
-    # all four edges have same color endpoints
-    assert state.cost == 4
-
-    state.setColor(1, 1)
-    state.setColor(3, 1)
-
-    # now each edge is adjacent to different colors
-    # this is a proper coloring, so the cost should be 0
-    assert state.cost == 0

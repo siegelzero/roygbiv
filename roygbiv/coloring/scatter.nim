@@ -53,7 +53,7 @@ proc replaceMostSimilar*(population: var seq[ColoringState], entry: ColoringStat
   # to the entry.
   var
     distance, minIndex: int
-    minDistance = entry.graph.n
+    minDistance = entry.graph.numVertices
 
   for i, other in population:
     if entry.cost <= other.cost:
@@ -63,7 +63,7 @@ proc replaceMostSimilar*(population: var seq[ColoringState], entry: ColoringStat
         minIndex = i
   
   # Don't change the population if adding the entry isn't an improvement.
-  if minDistance < entry.graph.n:
+  if minDistance < entry.graph.numVertices:
     # echo fmt"Replacing entry {population[minIndex].cost} with {entry.cost} (distance: {minDistance})"
     population[minIndex] = entry
 
@@ -89,7 +89,7 @@ proc populationDetails(states: seq[ColoringState]) =
   echo fmt"Population: {costs}"
 
 
-proc scatterSearch*(graph: Graph,
+proc scatterSearch*(graph: DenseGraph,
                     k: int,
                     populationSize: int,
                     iterations: int,

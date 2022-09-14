@@ -66,23 +66,16 @@ proc tabuImprove*(state: ColoringState, threshold: int, verbose: bool = false): 
 
 
 iterator batchImprove*(states: seq[ColoringState], tabuThreshold: int): ColoringState =
-  var
-    jobs: seq[FlowVarBase]
-    idx: int
+  var jobs: seq[FlowVarBase]
 
   for state in states:
     jobs.add(spawn state.tabuImprove(tabuThreshold))
   
-  # while jobs.len > 0:
-  #   idx = blockUntilAny(jobs)
-  #   yield ^FlowVar[ColoringState](jobs[idx])
-  #   jobs.del(idx)
-
   for job in jobs:
     yield ^FlowVar[ColoringState](job)
 
 
-proc buildPopulation*(graph: Graph,
+proc buildPopulation*(graph: DenseGraph,
                       k: int,
                       populationSize: int,
                       tabuThreshold: int): seq[ColoringState] =

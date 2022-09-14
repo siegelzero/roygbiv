@@ -86,7 +86,7 @@ proc populationDetails(states: seq[ColoringState]) =
   echo fmt"Population: {costs}"
 
 
-proc hybridEvolutionaryParallel*(graph: Graph,
+proc hybridEvolutionaryParallel*(graph: DenseGraph,
                                  k: int,
                                  populationSize: int,
                                  iterations: int,
