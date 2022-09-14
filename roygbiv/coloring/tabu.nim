@@ -6,7 +6,7 @@ import ../graph
 randomize()
 
 
-func bestMoves*(state: ColoringState): seq[Move] {.inline.} =
+func bestMoves(state: ColoringState): seq[Move] {.inline.} =
   # Returns the best available moves for the state.
   var
     newCost: int
@@ -31,12 +31,12 @@ func bestMoves*(state: ColoringState): seq[Move] {.inline.} =
           result.add((u, newColor))
 
 
-proc applyBestMove*(state: ColoringState) {.inline.} =
+proc applyBestMove(state: ColoringState) {.inline.} =
   # Applies a randomly chosen best greedy move to the state, mutating state.
   var moves = state.bestMoves()
   if moves.len > 0:
     let (u, newColor) = sample(moves)
-    state.setColor(u, newColor, mark = true)
+    state.setColor(u, newColor, markTabu = true)
   state.iteration += 1
 
 

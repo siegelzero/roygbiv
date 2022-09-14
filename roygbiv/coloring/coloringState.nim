@@ -94,7 +94,7 @@ func colorCost*(state: ColoringState, u: Vertex, newColor: int): int {.inline.} 
   return state.cost + state.numAdjacent[u][newColor] - state.numAdjacent[u][oldColor]
 
 
-proc setColor*(state: ColoringState, u: Vertex, newColor: int, mark: bool = false) {.inline.} =
+proc setColor*(state: ColoringState, u: Vertex, newColor: int, markTabu: bool = false) =
   # Sets color of vertex u to newColor and updates state
   # First adjust cost
   state.cost = state.colorCost(u, newColor)
@@ -114,7 +114,7 @@ proc setColor*(state: ColoringState, u: Vertex, newColor: int, mark: bool = fals
     state.numAdjacent[v][newColor] += 1
   
   # Mark oldColor as tabu for vertex u for some number of iterations
-  if mark:
+  if markTabu:
     state.tabu[u][oldColor] = state.iteration + state.alpha*state.cost + rand(10)
 
 

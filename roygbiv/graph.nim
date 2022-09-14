@@ -10,7 +10,7 @@ type
     numVertices*: int
     neighbors*: seq[VertexSet]
   
-iterator vertices*(graph: DenseGraph): Vertex =
+iterator vertices*(graph: DenseGraph): Vertex {.inline.} =
   # Iterator over the vertices of the graph
   for u in 0..<graph.numVertices: yield u
 
@@ -29,34 +29,3 @@ func addEdge*(graph: var DenseGraph, u, v: Vertex) =
   # Adds edge (u, v) to the graph
   graph.neighbors[u].incl(v)
   graph.neighbors[v].incl(u)
-
-
-func petersenGraph*(): DenseGraph =
-  # Returns Petersen graph
-  result = newDenseGraph(10)
-  result.addEdge(0, 2)
-  result.addEdge(0, 3)
-  result.addEdge(0, 6)
-  result.addEdge(1, 3)
-  result.addEdge(1, 4)
-  result.addEdge(1, 7)
-  result.addEdge(2, 4)
-  result.addEdge(2, 8)
-  result.addEdge(3, 9)
-  result.addEdge(4, 5)
-  result.addEdge(5, 6)
-  result.addEdge(5, 9)
-  result.addEdge(6, 7)
-  result.addEdge(7, 8)
-  result.addEdge(8, 9)
-
-
-when isMainModule:
-  import sequtils
-
-  block: # Petersen graph
-    let graph = petersenGraph()
-
-    assert graph.numVertices == 10
-    assert graph.vertices.toSeq.len == 10
-    assert graph.edges.toSeq.len == 15

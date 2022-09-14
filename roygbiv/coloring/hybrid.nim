@@ -11,7 +11,7 @@ type
   Partition = seq[VertexSet]
 
 
-proc vertexPartition*(state: ColoringState): seq[VertexSet] =
+proc vertexPartition(state: ColoringState): seq[VertexSet] =
   # Partitions the vertices of the underlying graph according to color.
   var
     group: VertexSet
@@ -37,7 +37,7 @@ func biggestGroup(A: seq[VertexSet]): VertexSet =
       result = A[i]
 
 
-proc crossover*(A, B: ColoringState): ColoringState =
+proc crossover(A, B: ColoringState): ColoringState =
   var
     group: VertexSet
     pairedGroups: seq[Partition]
@@ -57,7 +57,7 @@ proc crossover*(A, B: ColoringState): ColoringState =
 
 proc batchCrossoverImprove*(states: var seq[ColoringState], tabuThreshold: int) =
   var
-    i = 0
+    i: int
     jobs: seq[FlowVarBase]
     child: ColoringState
 
