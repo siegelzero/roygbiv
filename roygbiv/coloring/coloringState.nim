@@ -41,7 +41,7 @@ type
     tabu*: seq[seq[int]]
 
 
-proc initColoringState*(graph: DenseGraph, k: int): ColoringState =
+proc newColoringState*(graph: DenseGraph, k: int): ColoringState =
   # Returns a new ColoringState for the graph with a random assignment of k colors.
   var state = ColoringState()
   state.graph = graph

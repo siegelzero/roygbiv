@@ -43,7 +43,7 @@ proc crossover*(A, B: ColoringState): ColoringState =
     pairedGroups: seq[Partition]
 
   pairedGroups = @[A.vertexPartition(), B.vertexPartition()]
-  result = initColoringState(A.graph, A.k)
+  result = newColoringState(A.graph, A.k)
 
   for i in 0..<A.k:
     group = biggestGroup(pairedGroups[i mod 2])

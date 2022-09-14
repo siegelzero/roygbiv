@@ -85,7 +85,7 @@ proc buildPopulation*(graph: DenseGraph,
   echo fmt"Building population of size {populationSize}"
   # Begin with random assignment states.
   for i in 0..<populationSize:
-    initial.add(initColoringState(graph, k))
+    initial.add(newColoringState(graph, k))
   
   # Tabu-improve each, terminating early if a valid coloring is found.
   for e in initial.batchImprove(tabuThreshold):
