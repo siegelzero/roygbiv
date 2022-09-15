@@ -1,5 +1,8 @@
 import std/[packedsets]
 
+################################################################################
+# DenseGraph
+################################################################################
 
 type
   Vertex* = int
@@ -11,7 +14,6 @@ type
     neighbors*: seq[VertexSet]
   
 iterator vertices*(graph: DenseGraph): Vertex {.inline.} =
-  # Iterator over the vertices of the graph
   for u in 0..<graph.numVertices: yield u
 
 iterator edges*(graph: DenseGraph): (Vertex, Vertex) =
@@ -22,7 +24,6 @@ iterator edges*(graph: DenseGraph): (Vertex, Vertex) =
         yield (u, v)
 
 func newDenseGraph*(n: int): DenseGraph =
-  # Returns new DenseGraph on n vertices
   DenseGraph(numVertices: n, neighbors: newSeq[VertexSet](n))
 
 func addEdge*(graph: var DenseGraph, u, v: Vertex) =

@@ -7,30 +7,21 @@ import coloringState, tabu
 randomize()
 
 
-type
-  Partition = seq[VertexSet]
-
+type Partition = seq[VertexSet]
 
 proc vertexPartition(state: ColoringState): seq[VertexSet] =
   # Partitions the vertices of the underlying graph according to color.
-  var
-    group: VertexSet
-    partition: seq[VertexSet]
-
-  # Initialize empty group for each color in the assignment
   for i in 0..<state.k:
-    group = initPackedSet[Vertex]()
-    partition.add(group)
+    result.add(initPackedSet[Vertex]())
 
-  # Put each vertex into its color group
   # partition[i] is the set of vertices of color i in the assignment
   for u in state.graph.vertices:
-    partition[state.color[u]].incl(u)
-
-  return partition
+    result[state.color[u]].incl(u)
 
 
-func biggestGroup(A: seq[VertexSet]): VertexSet =
+proc biggestGroup(A: var seq[VertexSet]): VertexSet =
+  A.shuffle()
+
   result = A[0]
   for i in 1..<A.len:
     if A[i].len > result.len:

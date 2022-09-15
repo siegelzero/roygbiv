@@ -34,12 +34,14 @@ proc colorDIMACS(path: string, k: int): ColoringState =
 
   let
     # populationSize = 2*max(graph.n div 60, 10)
-    populationSize = 16
+    # populationSize = 16
+    populationSize = 4
     generations = 1000
     # tabuThreshold = 20*graph.numVertices
     tabuThreshold = 1000000
   
   echo "Coloring graph..."
+  # let improved = scatterSearch(graph, k, populationSize, generations, tabuThreshold)
   # let improved = hybridEvolutionaryParallel(graph, k, populationSize, generations, tabuThreshold)
   let improved = newColoringState(graph, k).tabuImprove(tabuThreshold, verbose = true)
 

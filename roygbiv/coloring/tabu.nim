@@ -46,6 +46,7 @@ proc tabuImprove*(state: ColoringState, threshold: int, verbose: bool = false): 
     bestSoFar = current.cost
     lastImprovement = 0
     then = epochTime()
+    start = then
     blockSize = 10000
     now, rate: float
 
@@ -55,13 +56,16 @@ proc tabuImprove*(state: ColoringState, threshold: int, verbose: bool = false): 
       now = epochTime()
       rate = float(blockSize) / (now - then)
       then = now
-      echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} it/sec"
+      echo fmt"Iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} moves/sec"
 
     if current.cost < bestSoFar:
       lastImprovement = current.iteration
       bestSoFar = current.cost
     
   current.loadBest()
+  now = epochTime()
+  rate = float(current.iteration) / (now - start)
+  echo fmt"Completed on iteration: {current.iteration}  Current: {current.cost}  Best: {current.bestCost}  Rate: {rate:.3f} moves/sec"
   return current
 
 
