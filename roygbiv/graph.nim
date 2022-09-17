@@ -26,7 +26,6 @@ iterator edges*(graph: DenseGraph): (Vertex, Vertex) =
 func newDenseGraph*(n: int): DenseGraph =
   DenseGraph(numVertices: n, neighbors: newSeq[VertexSet](n))
 
-func addEdge*(graph: var DenseGraph, u, v: Vertex) =
-  # Adds edge (u, v) to the graph
+func addEdge*(graph: DenseGraph, u, v: Vertex) =
   graph.neighbors[u].incl(v)
   graph.neighbors[v].incl(u)

@@ -19,13 +19,12 @@ proc vertexPartition(state: ColoringState): seq[VertexSet] =
     result[state.color[u]].incl(u)
 
 
-proc biggestGroup(A: var seq[VertexSet]): VertexSet =
-  A.shuffle()
-
-  result = A[0]
-  for i in 1..<A.len:
-    if A[i].len > result.len:
-      result = A[i]
+proc biggestGroup(partition: var seq[VertexSet]): VertexSet =
+  partition.shuffle()
+  result = partition[0]
+  for i in 1..<partition.len:
+    if partition[i].len > result.len:
+      result = partition[i]
 
 
 proc crossover(A, B: ColoringState): ColoringState =
@@ -46,6 +45,10 @@ proc crossover(A, B: ColoringState): ColoringState =
       gp.excl(group)
 
 
+proc crossoverImprove*(A, B: ColoringState, tabuThreshold: int): ColoringState =
+  crossover(A, B).tabuImprove(tabuThreshold)
+
+
 proc batchCrossoverImprove*(states: var seq[ColoringState], tabuThreshold: int) =
   var
     i: int
@@ -55,13 +58,11 @@ proc batchCrossoverImprove*(states: var seq[ColoringState], tabuThreshold: int) 
   states.shuffle()
 
   while i + 1 < states.len:
-    child = crossover(states[i], states[i + 1])
-    jobs.add(spawn child.tabuImprove(tabuThreshold))
+    jobs.add(spawn crossoverImprove(states[i], states[i + 1], tabuThreshold))
     i += 2
 
   for i, job in jobs:
     child = ^FlowVar[ColoringState](job)
-
     if states[i].cost > states[i + 1].cost:
       states[i] = child
     else:
