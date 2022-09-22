@@ -109,7 +109,7 @@ proc setColor*(state: ColoringState, u: Vertex, newColor: int, markTabu: bool = 
     state.bestColor = state.color
 
   for v in state.graph.neighbors[u]:
-    # v is adjancent to one less vertex of oldColor and one more vertex of newColor
+    # v is adjacent to one less vertex of oldColor and one more vertex of newColor
     state.numAdjacent[v][oldColor] -= 1
     state.numAdjacent[v][newColor] += 1
   
