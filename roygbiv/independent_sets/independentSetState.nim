@@ -42,12 +42,6 @@ proc newIndependentSetState*(graph: DenseGraph, k: int): IndependentSetState =
     if state.used[u] and state.used[v]:
       state.cost += 1
 
-  #for u in graph.vertices:
-  #  if state.used[u]:
-  #    for v in graph.neighbors[u]:
-  #      if state.used[v]:
-  #        state.cost += 1
-
   state.bestCost = state.cost
   state.bestUsed = state.used
   
